@@ -24,16 +24,27 @@
  */
 package fr.opensagres.xdocreport.document.odt;
 
+import java.io.Reader;
+import java.io.Writer;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
+
 import fr.opensagres.xdocreport.converter.MimeMapping;
 import fr.opensagres.xdocreport.core.document.DocumentKind;
 import fr.opensagres.xdocreport.core.io.IEntryOutputStreamProvider;
 import fr.opensagres.xdocreport.core.io.IEntryReaderProvider;
 import fr.opensagres.xdocreport.core.io.IEntryWriterProvider;
+import fr.opensagres.xdocreport.core.io.XDocArchive;
 import fr.opensagres.xdocreport.document.AbstractXDocReport;
 import fr.opensagres.xdocreport.document.images.IImageRegistry;
 import fr.opensagres.xdocreport.document.odt.images.ODTImageRegistry;
 import fr.opensagres.xdocreport.document.odt.preprocessor.ODTManifestXMLProcessor;
 import fr.opensagres.xdocreport.document.odt.preprocessor.ODTPreprocessor;
+import fr.opensagres.xdocreport.document.odt.preprocessor.ODTStylesPreprocessor;
+import fr.opensagres.xdocreport.document.odt.textstyling.ODTPostProcessor;
+import fr.opensagres.xdocreport.document.preprocessor.sax.BufferedDocument;
 
 /**
  * Open Office ODT report. For mime mapping please see {@see
@@ -41,49 +52,69 @@ import fr.opensagres.xdocreport.document.odt.preprocessor.ODTPreprocessor;
  */
 public class ODTReport extends AbstractXDocReport implements ODTConstants {
 
-	private static final long serialVersionUID = 5974669564624835649L;
+    private static final long serialVersionUID = 5974669564624835649L;
 
-	private static final String[] DEFAULT_XML_ENTRIES = { CONTENT_XML_ENTRY,
-			STYLES_XML_ENTRY, METAINF_MANIFEST_XML_ENTRY };
+    private static final String[] DEFAULT_XML_ENTRIES = { CONTENT_XML_ENTRY,
+            STYLES_XML_ENTRY, METAINF_MANIFEST_XML_ENTRY };
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see fr.opensagres.xdocreport.document.IXDocReport#getKind()
-	 */
-	public String getKind() {
-		return DocumentKind.ODT.name();
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.opensagres.xdocreport.document.IXDocReport#getKind()
+     */
+    public String getKind() {
+        return DocumentKind.ODT.name();
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see fr.opensagres.xdocreport.document.IXDocReport#getMimeMapping()
-	 */
-	public MimeMapping getMimeMapping() {
-		return MIME_MAPPING;
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.opensagres.xdocreport.document.IXDocReport#getMimeMapping()
+     */
+    public MimeMapping getMimeMapping() {
+        return MIME_MAPPING;
+    }
 
-	@Override
-	protected void registerPreprocessors() {
-		// processor to modify content.xml
-		super.addPreprocessor(CONTENT_XML_ENTRY, ODTPreprocessor.INSTANCE);
-		// processor to modify META-INF/manifest.xml
-		super.addPreprocessor(METAINF_MANIFEST_XML_ENTRY,
-				ODTManifestXMLProcessor.INSTANCE);
-	}
+    @Override
+    protected void registerPreprocessors() {
+        // processor to modify content.xml
+        super.addPreprocessor(CONTENT_XML_ENTRY, ODTPreprocessor.INSTANCE);
+        // processor to modify META-INF/manifest.xml
+        super.addPreprocessor(METAINF_MANIFEST_XML_ENTRY,
+                ODTManifestXMLProcessor.INSTANCE);
+        // processor to modify global styles
+        super.addPreprocessor(STYLES_XML_ENTRY, ODTStylesPreprocessor.INSTANCE);
+    }
 
-	@Override
-	protected String[] getDefaultXMLEntries() {
-		return DEFAULT_XML_ENTRIES;
-	}
+    @Override
+    protected String[] getDefaultXMLEntries() {
+        return DEFAULT_XML_ENTRIES;
+    }
 
-	@Override
-	protected IImageRegistry createImageRegistry(
-			IEntryReaderProvider readerProvider,
-			IEntryWriterProvider writerProvider,
-			IEntryOutputStreamProvider outputStreamProvider) {
-		return new ODTImageRegistry(readerProvider, writerProvider,
-				outputStreamProvider);
-	}
+    @Override
+    protected void doPostprocessIfNeeded(XDocArchive outputArchive) {
+        Reader contentReader = outputArchive.getEntryReader(CONTENT_XML_ENTRY);
+        ODTPostProcessor postprocessor = new ODTPostProcessor();
+        try {
+            XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+            xmlReader.setContentHandler(postprocessor);
+            xmlReader.parse(new InputSource(contentReader));
+            BufferedDocument document = postprocessor.getBufferedDocument();
+            Writer writer = outputArchive.getEntryWriter(CONTENT_XML_ENTRY);
+            document.save(writer);
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Override
+    protected IImageRegistry createImageRegistry(
+            IEntryReaderProvider readerProvider,
+            IEntryWriterProvider writerProvider,
+            IEntryOutputStreamProvider outputStreamProvider) {
+        return new ODTImageRegistry(readerProvider, writerProvider,
+                outputStreamProvider);
+    }
 }

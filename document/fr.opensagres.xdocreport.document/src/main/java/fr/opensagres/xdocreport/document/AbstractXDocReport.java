@@ -432,6 +432,8 @@ public abstract class AbstractXDocReport implements IXDocReport {
 			// engine (freemarker, velocity).
 			processTemplateEngine(context, outputArchive);
 
+            doPostprocessIfNeeded(outputArchive);
+            
 			if (StringUtils.isNotEmpty(entryName)) {
 				if (!outputArchive.hasEntry(entryName)) {
 					throw new XDocReportException(
@@ -474,6 +476,10 @@ public abstract class AbstractXDocReport implements IXDocReport {
 			outputArchive = null;
 		}
 	}
+
+    protected void doPostprocessIfNeeded(XDocArchive outputArchive) {
+        // Empty default impl to avoid breaking compat
+    }
 
 	public void save(ProcessState processState, OutputStream out)
 			throws IOException, XDocReportException {

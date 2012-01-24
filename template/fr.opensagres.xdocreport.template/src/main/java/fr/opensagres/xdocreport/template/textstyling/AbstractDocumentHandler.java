@@ -29,75 +29,84 @@ import java.util.Stack;
 
 /**
  * Abstract class for document handler {@link IDocumentHandler}.
- * 
+ *
  */
 public abstract class AbstractDocumentHandler implements IDocumentHandler {
 
-	protected final StringWriter writer;
-	private final Stack<Boolean> listStack;
+    protected final StringWriter writer;
+    private final Stack<Boolean> listStack;
 
-	public AbstractDocumentHandler() {
-		this.writer = new StringWriter();
-		// Stack of boolean (ordered or not) for the ordered/unordered list
-		this.listStack = new Stack<Boolean>();
-	}
+    public AbstractDocumentHandler() {
+        this.writer = new StringWriter();
+        // Stack of boolean (ordered or not) for the ordered/unordered list
+        this.listStack = new Stack<Boolean>();
+    }
 
-	public void handleString(String s) {
-		writer.write(s);
-	}
+    public void handleString(String s) {
+        writer.write(s);
+    }
 
-	@Override
-	public String toString() {
-		return writer.toString();
-	}
+    @Override
+    public String toString() {
+        return writer.toString();
+    }
 
-	public final void startOrderedList() {
-		listStack.push(true);
-		doStartOrderedList();
-	}
+    public final void startOrderedList() {
+        listStack.push(true);
+        doStartOrderedList();
+    }
 
-	public final void endOrderedList() {
-		listStack.pop();
-		doEndOrderedList();
-	}
+    public final void endOrderedList() {
+        listStack.pop();
+        doEndOrderedList();
+    }
 
-	public final void startUnorderedList() {
-		listStack.push(false);
-		doStartUnorderedList();
-	}
+    public final void startUnorderedList() {
+        listStack.push(false);
+        doStartUnorderedList();
+    }
 
-	public final void endUnorderedList() {
-		listStack.pop();
-		doEndUnorderedList();
-	}
+    public final void endUnorderedList() {
+        listStack.pop();
+        doEndUnorderedList();
+    }
 
-	protected boolean getCurrentListOrder() {
-		if (listStack.isEmpty()) {
-			return false;
-		}
-		return listStack.peek();
-	}
+    protected boolean getCurrentListOrder() {
+        if (listStack.isEmpty()) {
+            return false;
+        }
+        return listStack.peek();
+    }
 
-	protected int getCurrentListIndex() {
-		if (listStack.isEmpty()) {
-			return 0;
-		}
-		return listStack.size() - 1;
-	}
+    protected int getCurrentListIndex() {
+        if (listStack.isEmpty()) {
+            return 0;
+        }
+        return listStack.size() - 1;
+    }
 
-	protected void doEndUnorderedList() {
+    protected void doEndUnorderedList() {
 
-	}
+    }
 
-	protected void doEndOrderedList() {
+    protected void doEndOrderedList() {
 
-	}
-	
-	protected void doStartUnorderedList() {
+    }
 
-	}
+    protected void doStartUnorderedList() {
 
-	protected void doStartOrderedList() {
+    }
 
-	}
+    protected void doStartOrderedList() {
+
+    }
+
+    public void startHeading(int level) {
+        // Void impl to avoid breaking anothing
+    }
+
+    public void endHeading(int level) {
+        // Void impl to avoid breaking anothing
+    }
+
 }

@@ -7,87 +7,108 @@ import fr.opensagres.xdocreport.template.textstyling.AbstractDocumentHandler;
 
 public class ODTDocumentHandler extends AbstractDocumentHandler {
 
-	private boolean bolding;
-	private boolean italicsing;
-	private Stack<Boolean> paragraphsStack;
+    private boolean bolding;
+    private boolean italicsing;
+    private Stack<Boolean> paragraphsStack;
+    boolean isHeader = false;
 
-	public void startDocument() {
-		this.bolding = false;
-		this.italicsing = false;
-		this.paragraphsStack = new Stack<Boolean>();
-	}
+    // Dummy marker that will be used in the postProcessing for reorg of the paragraphs
+    public static final String PARAGRAPH_AUTOBREAK_START = "PARAGRAPH_BREAKSTART";
+    public static final String PARAGRAPH_AUTOBREAK_END = "PARAGRAPH_BREAKEND";
 
-	public void endDocument() {
-		if (!paragraphsStack.isEmpty()) {
-			paragraphsStack.size();
-			for (int i = 0; i < paragraphsStack.size(); i++) {
-				internalEndParagraph();
-			}
-		}
-		// System.err.println(writer.getBuffer().toString());
-	}
+    public void startDocument() {
+        this.bolding = false;
+        this.italicsing = false;
+        this.paragraphsStack = new Stack<Boolean>();
+    }
 
-	public void startBold() {
-		this.bolding = true;
-	}
+    public void endDocument() {
+        if (!paragraphsStack.isEmpty()) {
+            paragraphsStack.size();
+            for (int i = 0; i < paragraphsStack.size(); i++) {
+                internalEndParagraph();
+            }
+        }
+    }
 
-	public void endBold() {
-		this.bolding = false;
-	}
+    public void startBold() {
+        this.bolding = true;
+    }
 
-	public void startItalics() {
-		this.italicsing = true;
-	}
+    public void endBold() {
+        this.bolding = false;
+    }
 
-	public void endItalics() {
-		this.italicsing = false;
-	}
+    public void startItalics() {
+        this.italicsing = true;
+    }
 
-	@Override
-	public void handleString(String content) {
-		writer.write("<text:span");
-		if (bolding || italicsing) {
-			writer.write(" text:style-name=\"");
-			if (bolding && italicsing) {
-				writer.write(ODTBufferedDocumentContentHandler.BOLD_ITALIC_STYLE_NAME);
-			} else if (italicsing) {
-				writer.write(ODTBufferedDocumentContentHandler.ITALIC_STYLE_NAME);
-			} else if (bolding) {
-				writer.write(ODTBufferedDocumentContentHandler.BOLD_STYLE_NAME);
-			}
-			writer.write("\" ");
-		}
-		writer.write(">");
-		writer.write(content);
-		writer.write("</text:span>");
-	}
+    public void endItalics() {
+        this.italicsing = false;
+    }
 
-	public void startListItem() {
-		// TODO Auto-generated method stub
+    @Override
+    public void handleString(String content) {
 
-	}
+        if (isHeader) {
+            writer.write(content);
+        } else {
+            writer.write("<text:span");
+            if (bolding || italicsing) {
+                writer.write(" text:style-name=\"");
+                if (bolding && italicsing) {
+                    writer.write(ODTBufferedDocumentContentHandler.BOLD_ITALIC_STYLE_NAME);
+                } else if (italicsing) {
+                    writer.write(ODTBufferedDocumentContentHandler.ITALIC_STYLE_NAME);
+                } else if (bolding) {
+                    writer.write(ODTBufferedDocumentContentHandler.BOLD_STYLE_NAME);
+                }
+                writer.write("\" ");
+            }
+            writer.write(">");
+            writer.write(content);
+            writer.write("</text:span>");
+        }
+    }
 
-	public void endListItem() {
-		// TODO Auto-generated method stub
+    public void startListItem() {
+        // TODO Auto-generated method stub
 
-	}
+    }
 
-	public void startParagraph() {
-		internalStartParagraph(false);
-	}
+    public void endListItem() {
+        // TODO Auto-generated method stub
 
-	public void endParagraph() {
-		internalEndParagraph();
-	}
+    }
 
-	private void internalStartParagraph(boolean containerIsList) {
-		writer.write("<text:span>");
-		paragraphsStack.push(containerIsList);
-	}
+    public void startParagraph() {
+        internalStartParagraph(false);
+    }
 
-	private void internalEndParagraph() {
-		writer.write("</text:span>");
-		paragraphsStack.pop();
-	}
+    public void endParagraph() {
+        internalEndParagraph();
+    }
+
+    private void internalStartParagraph(boolean containerIsList) {
+        writer.write("<text:span>");
+        paragraphsStack.push(containerIsList);
+    }
+
+    private void internalEndParagraph() {
+        writer.write("</text:span>");
+        paragraphsStack.pop();
+    }
+
+    public void startHeading(int level) {
+        writer.write("<text:span text:style-name=\"" + PARAGRAPH_AUTOBREAK_START + "\">  </text:span>");
+        writer.write("<text:h text:style-name=\"Heading_20_" + level + "\" text:outline-level=\"" + level + "\">");
+        isHeader=true; // XXX nested Headers ?
+    }
+
+    public void endHeading(int level) {
+        writer.write("</text:h>");
+        writer.write("<text:span text:style-name=\"" + PARAGRAPH_AUTOBREAK_END + "\">  </text:span>");
+        isHeader=false;
+    }
 
 }
