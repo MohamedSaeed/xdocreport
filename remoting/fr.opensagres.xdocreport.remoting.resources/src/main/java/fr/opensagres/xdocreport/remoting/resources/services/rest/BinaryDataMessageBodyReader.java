@@ -30,13 +30,13 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
+import javax.activation.DataHandler;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
-import fr.opensagres.xdocreport.core.io.IOUtils;
 import fr.opensagres.xdocreport.remoting.resources.domain.BinaryData;
 
 /**
@@ -74,7 +74,9 @@ public class BinaryDataMessageBodyReader
       //  byte[] content=IOUtils.toByteArray(entityStream);
         //BinaryData data = new BinaryData( entityStream, filename, mimetype );
         BinaryData data = new BinaryData( );
-        data.setContent(entityStream);
+        DataHandler dataHandler= new DataHandler(entityStream, mimetype);
+        data.setDataHandler(dataHandler);
+        //data.getContent().equals(obj)(entityStream);
         data.setFileName(filename);
         data.setMimeType(mimetype);
         data.setResourceId( resourceId );

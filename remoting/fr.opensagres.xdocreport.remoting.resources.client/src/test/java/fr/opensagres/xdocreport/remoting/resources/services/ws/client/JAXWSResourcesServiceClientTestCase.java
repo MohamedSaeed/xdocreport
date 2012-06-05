@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 
+import javax.activation.DataHandler;
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -45,6 +47,7 @@ public class JAXWSResourcesServiceClientTestCase
     public static void startServer()
         throws Exception
     {
+
 
         // 1) Copy resources in the target folder.
         initResources();
@@ -105,8 +108,8 @@ public class JAXWSResourcesServiceClientTestCase
 
         BinaryData document = client.download( resourceId );
         Assert.assertNotNull( document );
-        Assert.assertNotNull( document.getContent() );
-        createFile( document.getContent(), resourceId );
+        Assert.assertNotNull( document.getDataHandler() );
+        createFile( document.getDataHandler(), resourceId );
     }
 
     @Test
@@ -117,8 +120,8 @@ public class JAXWSResourcesServiceClientTestCase
         ResourcesService client = JAXWSResourcesServiceClientFactory.create( BASE_ADDRESS );
         BinaryData document = client.download( resourceId );
         Assert.assertNotNull( document );
-        Assert.assertNotNull( document.getContent() );
-        createFile( document.getContent(), resourceId );
+        Assert.assertNotNull( document.getDataHandler() );
+        createFile( document.getDataHandler(), resourceId );
     }
 
     @Test
@@ -136,6 +139,15 @@ public class JAXWSResourcesServiceClientTestCase
         // {
         // e.printStackTrace();
         // }
+    }
+
+
+    private void createFile( DataHandler stream, String filename )
+        throws FileNotFoundException, IOException
+    {
+        File aFile = new File( tempFolder, this.getClass().getSimpleName() + "_" + filename );
+        FileOutputStream fos = new FileOutputStream( aFile );
+        IOUtils.copy( stream.getInputStream(), fos );
     }
 
     private void createFile( InputStream stream, String filename )
@@ -156,7 +168,8 @@ public class JAXWSResourcesServiceClientTestCase
 
         BinaryData dataIn = new BinaryData();
         dataIn.setResourceId( resourceId );
-        dataIn.setContent( document );
+        DataHandler dataHandler= new DataHandler(document, "application/octet-stream");
+        dataIn.setDataHandler( dataHandler );
         client.upload( dataIn );
 
         // Test if file was uploaded in the target/resources folder
@@ -165,7 +178,7 @@ public class JAXWSResourcesServiceClientTestCase
         // Test if download with the resourceId returns a non null binary data.
         BinaryData downloadedDocument = client.download( resourceId );
         Assert.assertNotNull( downloadedDocument );
-        Assert.assertNotNull( downloadedDocument.getContent() );
+        Assert.assertNotNull( downloadedDocument.getDataHandler() );
     }
 
     @Test
@@ -178,7 +191,8 @@ public class JAXWSResourcesServiceClientTestCase
 
         BinaryData dataIn = new BinaryData();
         dataIn.setResourceId( resourceId );
-        dataIn.setContent( document );
+        DataHandler dataHandler= new DataHandler(document, "application/octet-stream");
+        dataIn.setDataHandler( dataHandler );
         client.upload( dataIn );
 
         // Test if file was uploaded in the target/resources folder
@@ -188,7 +202,7 @@ public class JAXWSResourcesServiceClientTestCase
         // Test if download with the resourceId returns a non null binary data.
         BinaryData downloadedDocument = client.download( resourceId );
         Assert.assertNotNull( downloadedDocument );
-        Assert.assertNotNull( downloadedDocument.getContent() );
+        Assert.assertNotNull( downloadedDocument.getDataHandler() );
     }
 
     @AfterClass

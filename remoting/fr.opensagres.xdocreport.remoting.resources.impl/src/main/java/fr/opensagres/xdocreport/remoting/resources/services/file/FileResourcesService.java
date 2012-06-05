@@ -10,6 +10,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import javax.activation.DataHandler;
+import javax.mail.util.ByteArrayDataSource;
+
 import fr.opensagres.xdocreport.core.io.IOUtils;
 import fr.opensagres.xdocreport.core.utils.StringUtils;
 import fr.opensagres.xdocreport.remoting.resources.domain.BinaryData;
@@ -42,10 +45,11 @@ public abstract class FileResourcesService
         try
         {
         	FileInputStream input = new FileInputStream(file);
-        	byte[] content=IOUtils.toByteArray(input);
+        	//byte[] content=IOUtils.toByteArray(input);
             //BinaryData data = new BinaryData( content, file.getName() );
         	BinaryData data = new BinaryData( );
-        	data.setContent(input);
+        	  DataHandler dataHandler= new DataHandler(input, "application/octet-stream");
+        	data.setDataHandler(dataHandler);
         	data.setFileName(file.getName());
             data.setResourceId( resourceId );
             return data;
@@ -64,7 +68,7 @@ public abstract class FileResourcesService
     public void upload( BinaryData data ) throws ResourcesException
     {
         String resourceId = data.getResourceId();
-        InputStream input = data.getContent();
+
         String resourcePath = getResourcePath( resourceId );
         File file = new File( getRootFolder(), resourcePath );
         if ( !file.getParentFile().exists() )
@@ -77,6 +81,7 @@ public abstract class FileResourcesService
         {
 
             output = new FileOutputStream( file );
+            InputStream input = (InputStream)data.getDataHandler().getContent();
             IOUtils.copyLarge( input, output );
         }
         catch ( IOException e )
@@ -85,10 +90,10 @@ public abstract class FileResourcesService
         }
         finally
         {
-            if ( input != null )
-            {
-                IOUtils.closeQuietly( input );
-            }
+//            if ( input != null )
+//            {
+//                IOUtils.closeQuietly( input );
+//            }
             if ( output != null )
             {
                 IOUtils.closeQuietly( output );

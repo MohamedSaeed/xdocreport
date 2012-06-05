@@ -53,6 +53,7 @@ public class BinaryDataMessageBodyWriter
     implements MessageBodyWriter<BinaryData>
 {
 
+
     public boolean isWriteable( Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType )
     {
         return BinaryData.class.isAssignableFrom( type );
@@ -68,13 +69,19 @@ public class BinaryDataMessageBodyWriter
         throws IOException, WebApplicationException
     {
 
-        InputStream content = t.getContent();
 
+    	Object content=t.getDataHandler().getContent();
         httpHeaders.add( "Content-Disposition", "attachement;filename=" + t.getFileName() );
         httpHeaders.add( "Content-Type", t.getMimeType() );
         httpHeaders.add( "X-resourceId", t.getResourceId() );
         //IOUtils.write(content, entityStream);
-        IOUtils.copyLarge(content, entityStream);
+    	if(content instanceof InputStream){
+    		InputStream input = (InputStream)content;
+
+            IOUtils.copyLarge(input, entityStream);
+            IOUtils.closeQuietly(input);
+    	}
+    	//else ???
 
     }
 

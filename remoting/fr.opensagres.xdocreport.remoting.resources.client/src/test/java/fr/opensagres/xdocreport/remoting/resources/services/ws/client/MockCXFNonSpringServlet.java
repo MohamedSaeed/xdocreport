@@ -3,6 +3,7 @@ package fr.opensagres.xdocreport.remoting.resources.services.ws.client;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.xml.ws.Endpoint;
+import javax.xml.ws.soap.SOAPBinding;
 
 import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
 
@@ -23,6 +24,12 @@ public class MockCXFNonSpringServlet
                                        new JAXWSResourcesServiceImpl(
                                                                       new MockResourcesService(
                                                                                                 JAXWSResourcesServiceClientTestCase.resourcesDir ) ) );
+
+
+        SOAPBinding binding = (SOAPBinding)e.getBinding();
+        binding.setMTOMEnabled(true);
         System.err.println(e);
+
+
     }
 }

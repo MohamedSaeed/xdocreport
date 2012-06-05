@@ -24,8 +24,9 @@
  */
 package fr.opensagres.xdocreport.remoting.resources.domain;
 
-import java.io.InputStream;
-
+import javax.activation.DataHandler;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlMimeType;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -38,6 +39,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author <a href="mailto:tdelprat@nuxeo.com">Tiry</a>
  */
 @XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
 public class BinaryData
 {
 
@@ -45,7 +47,10 @@ public class BinaryData
 
     private String resourceId;
 
-    private InputStream content;
+    @XmlMimeType("application/octet-stream")
+    private DataHandler dataHandler
+    ;
+
 
     private String fileName;
 
@@ -110,19 +115,13 @@ public class BinaryData
         this.resourceId = resourceId;
     }
 
-    /*
-     * This method is only here for JAXB and compatibility
-     */
-    @XmlMimeType( DEFAULT_MIMETYPE )
-    public InputStream getContent()
-    {
-        return content;
-    }
+    public DataHandler getDataHandler() {
+		return dataHandler;
+	}
 
-    public void setContent(InputStream content )
-    {
-        this.content=content;
-    }
+    public void setDataHandler(DataHandler content) {
+		this.dataHandler = content;
+	}
 
     public String getFileName()
     {

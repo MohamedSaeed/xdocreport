@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 
+import javax.activation.DataHandler;
+
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxrs.client.ClientConfiguration;
@@ -125,9 +127,10 @@ public class JAXRSResourcesServiceCGLibClientTestCase
             JAXRSClientFactory.create( BASE_ADDRESS, JAXRSResourcesService.class, Providers.get() );
         BinaryData document = client.download( resourceId );
         Assert.assertNotNull( document );
-        Assert.assertNotNull( document.getContent() );
-        createFile( document.getContent(), resourceId );
+        Assert.assertNotNull( document.getDataHandler() );
+        createFile( document.getDataHandler(), resourceId );
     }
+
 
     @Test
     public void downloadAFileInFolder()
@@ -138,8 +141,8 @@ public class JAXRSResourcesServiceCGLibClientTestCase
             JAXRSClientFactory.create( BASE_ADDRESS, JAXRSResourcesService.class, Providers.get() );
         BinaryData document = client.download( resourceId );
         Assert.assertNotNull( document );
-        Assert.assertNotNull( document.getContent() );
-        createFile( document.getContent(), resourceId );
+        Assert.assertNotNull( document.getDataHandler() );
+        createFile( document.getDataHandler(), resourceId );
     }
 
     private void createFile( InputStream content, String filename )
@@ -149,6 +152,14 @@ public class JAXRSResourcesServiceCGLibClientTestCase
         FileOutputStream fos = new FileOutputStream( aFile );
         IOUtils.copy(content, fos );
     }
+
+    private void createFile( DataHandler content, String filename )
+            throws FileNotFoundException, IOException
+        {
+            File aFile = new File( tempFolder, this.getClass().getSimpleName() + "_" + filename );
+            FileOutputStream fos = new FileOutputStream( aFile );
+            IOUtils.copy((InputStream)content.getContent(), fos );
+        }
 
     public static void main( String[] args ) throws IOException
     {
@@ -170,11 +181,13 @@ public class JAXRSResourcesServiceCGLibClientTestCase
 
         BinaryData dataIn = new BinaryData();
         dataIn.setResourceId( resourceId );
-        dataIn.setContent( document );
+        DataHandler dataHandler= new DataHandler(document, "application/octet-stream");
+        dataIn.setDataHandler( dataHandler );
 
         client.upload( dataIn );
 
     }
+
 
     @Test
     public void uploadARootFile()
@@ -183,11 +196,13 @@ public class JAXRSResourcesServiceCGLibClientTestCase
         String resourceId = "ZzzNewSimple_" + this.getClass().getSimpleName() + ".docx";
         ResourcesService client =
             JAXRSClientFactory.create( BASE_ADDRESS, JAXRSResourcesService.class, Providers.get() );
+
         InputStream document =  Data.class.getResourceAsStream( "Simple.docx" ) ;
 
         BinaryData dataIn = new BinaryData();
         dataIn.setResourceId( resourceId );
-        dataIn.setContent( document );
+        DataHandler dataHandler= new DataHandler( document, "application/octet-stream");
+        dataIn.setDataHandler( dataHandler );
 
         client.upload( dataIn );
 
@@ -197,7 +212,7 @@ public class JAXRSResourcesServiceCGLibClientTestCase
         // Test if download with the resourceId returns a non null binary data.
         BinaryData downloadedDocument = client.download( resourceId );
         Assert.assertNotNull( downloadedDocument );
-        Assert.assertNotNull( downloadedDocument.getContent() );
+        Assert.assertNotNull( downloadedDocument.getDataHandler() );
     }
 
     @Test
@@ -211,7 +226,8 @@ public class JAXRSResourcesServiceCGLibClientTestCase
 
         BinaryData dataIn = new BinaryData();
         dataIn.setResourceId( resourceId );
-        dataIn.setContent( document );
+        DataHandler dataHandler= new DataHandler(document, "application/octet-stream");
+        dataIn.setDataHandler( dataHandler );
 
         client.upload( dataIn );
 
@@ -222,7 +238,7 @@ public class JAXRSResourcesServiceCGLibClientTestCase
         // Test if download with the resourceId returns a non null binary data.
         BinaryData downloadedDocument = client.download( resourceId );
         Assert.assertNotNull( downloadedDocument );
-        Assert.assertNotNull( downloadedDocument.getContent() );
+        Assert.assertNotNull( downloadedDocument.getDataHandler() );
     }
 
     @AfterClass

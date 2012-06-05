@@ -3,6 +3,7 @@ package fr.opensagres.xdocreport.remoting.resources.services.ws.server;
 import java.util.List;
 
 import javax.jws.WebService;
+import javax.xml.ws.soap.MTOM;
 
 import fr.opensagres.xdocreport.remoting.resources.domain.BinaryData;
 import fr.opensagres.xdocreport.remoting.resources.domain.Filter;
@@ -11,7 +12,7 @@ import fr.opensagres.xdocreport.remoting.resources.services.DelegateResourcesSer
 import fr.opensagres.xdocreport.remoting.resources.services.ResourcesException;
 import fr.opensagres.xdocreport.remoting.resources.services.ResourcesService;
 import fr.opensagres.xdocreport.remoting.resources.services.ws.JAXWSResourcesService;
-
+@MTOM
 @WebService( endpointInterface = "fr.opensagres.xdocreport.remoting.resources.services.ws.JAXWSResourcesService", serviceName = "ResourcesServiceService" )
 public class JAXWSResourcesServiceImpl
     extends DelegateResourcesService

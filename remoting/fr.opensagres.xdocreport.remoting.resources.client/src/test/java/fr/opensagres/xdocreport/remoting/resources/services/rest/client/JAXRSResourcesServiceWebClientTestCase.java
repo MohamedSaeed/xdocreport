@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 
+import javax.activation.DataHandler;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -122,10 +123,17 @@ public class JAXRSResourcesServiceWebClientTestCase
         BinaryData document =
             client.path( path.toString() ).accept( MediaType.APPLICATION_JSON_TYPE ).get( BinaryData.class );
         Assert.assertNotNull( document );
-        Assert.assertNotNull( document.getContent() );
-        createFile( document.getContent(), resourcePath );
+        Assert.assertNotNull( document.getDataHandler() );
+        createFile( document.getDataHandler(), resourcePath );
     }
 
+    private void createFile( DataHandler stream, String filename )
+            throws FileNotFoundException, IOException
+        {
+            File aFile = new File( tempFolder, this.getClass().getSimpleName() + "_" + filename );
+            FileOutputStream fos = new FileOutputStream( aFile );
+            IOUtils.copy( (InputStream)stream.getContent(), fos );
+        }
     private void createFile( InputStream stream, String filename )
         throws FileNotFoundException, IOException
     {
@@ -144,7 +152,8 @@ public class JAXRSResourcesServiceWebClientTestCase
 
         BinaryData dataIn = new BinaryData();
         dataIn.setResourceId( resourceId );
-        dataIn.setContent( document );
+        DataHandler dataHandler= new DataHandler(document, "application/octet-stream");
+        dataIn.setDataHandler( dataHandler );
 
         WebClient client = getClient();
         client.path( ResourcesServiceName.upload );
@@ -172,7 +181,8 @@ public class JAXRSResourcesServiceWebClientTestCase
 
         BinaryData dataIn = new BinaryData();
         dataIn.setResourceId( resourceId );
-        dataIn.setContent( document );
+        DataHandler dataHandler= new DataHandler(document, "application/octet-stream");
+        dataIn.setDataHandler( dataHandler );
 
         WebClient client = getClient();
         client.path( ResourcesServiceName.upload );

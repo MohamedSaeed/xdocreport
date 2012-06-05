@@ -33,6 +33,9 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Writer;
 
+import javax.activation.DataHandler;
+import javax.mail.util.ByteArrayDataSource;
+
 import fr.opensagres.xdocreport.core.io.IOUtils;
 import fr.opensagres.xdocreport.core.utils.StringUtils;
 import fr.opensagres.xdocreport.document.tools.internal.ArgContext;
@@ -167,17 +170,17 @@ public class Main
         throws IOException, ResourcesException
     {
         BinaryData data = client.download( resourcePath );
-        if ( data.getContent() != null )
+        if ( data.getDataHandler() != null )
         {
-            createFile( data.getContent(), outFile );
+            createFile( data.getDataHandler(), outFile );
         }
         else
         {
-            createFile( data.getContent(), outFile );
+            createFile( data.getDataHandler(), outFile );
         }
     }
 
-    private static void createFile( byte[] flux, File outFile )
+    private static void createFile( DataHandler flux, File outFile )
         throws IOException
     {
         if ( outFile.getParentFile() != null )
@@ -185,7 +188,8 @@ public class Main
             outFile.getParentFile().mkdirs();
         }
         FileOutputStream fos = new FileOutputStream( outFile );
-        fos.write( flux );
+        FileOutputStream out = new FileOutputStream( outFile );
+        IOUtils.copy( (InputStream)flux.getContent(), out );
         fos.close();
     }
 
@@ -230,7 +234,9 @@ public class Main
     	byte[] content=IOUtils.toByteArray(input);
       //  BinaryData data = new BinaryData( content, out.getName() );
         BinaryData data = new BinaryData( );
-        data.setContent(input);
+        DataHandler dataHandler= new DataHandler(new ByteArrayDataSource(input, "application/octet-stream"));
+
+        data.setDataHandler(dataHandler);
         data.setFileName(out.getName());
         data.setResourceId( resourceId );
         client.upload( data );
